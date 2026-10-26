@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class 4 Visuals: Stack, Queue, Circular Buffer</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--text:#1f2430;--muted:#5d6472;--line:#dcdad2;--accent:#1f5fd1;--accent-bg:#e8f0fd;--warn:#b7791f}
+@media (prefers-color-scheme:dark){:root{--bg:#16181d;--card:#1f232b;--text:#eceef2;--muted:#a1a8b5;--line:#343944;--accent:#6ea2ff;--accent-bg:#1f2d47;--warn:#e0b04a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55}
+main{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:19px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:22px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:8px 14px}
+button:hover{border-color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.lbl{font-size:13px;color:var(--muted);margin-bottom:6px}
+.box{background:var(--bg);border-radius:8px;padding:12px;margin:0 0 10px}
+.box .v{font-size:15px;font-weight:600;margin-top:2px}
+.item{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:40px;border-radius:8px;font-weight:600;font-size:14px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);margin-bottom:6px}
+.item.top{border-width:2.5px}
+.tag{font-size:12px;font-weight:400}
+.cell{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);flex:none}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.grid3 .v{font-size:22px;font-weight:600}
+.key{font-size:14px;color:var(--muted);margin-top:8px}
+code{background:var(--accent-bg);color:var(--accent);padding:1px 6px;border-radius:4px}
+@media (max-width:560px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Class 4 visuals</h1>
+<p class="sub">Press the buttons and watch what happens. Three interactive demos: stack, queue, circular buffer.</p>
+
+<section class="card">
+  <h2>1. Stack: one door, last in first out</h2>
+  <p class="sub">Push edits on top, pop (undo) takes the newest first.</p>
+  <div class="grid2">
+    <div>
+      <div class="lbl">Undo pile (top is the open end)</div>
+      <div id="stack" style="min-height:170px"></div>
+      <div style="height:2px;background:var(--line)"></div>
+      <div class="lbl" style="margin-top:4px">bottom (oldest)</div>
+    </div>
+    <div>
+      <div class="lbl">push an edit</div>
+      <div class="row">
+        <button onclick="sPush('brighten')">brighten</button>
+        <button onclick="sPush('crop')">crop</button>
+        <button onclick="sPush('rotate')">rotate</button>
+        <button onclick="sPush('filter')">filter</button>
+        <button onclick="sPush('sharpen')">sharpen</button>
+      </div>
+      <div class="row">
+        <button onclick="sPop()">pop (undo)</button>
+        <button onclick="sPeek()">peek</button>
+        <button onclick="sReset()">reset</button>
+      </div>
+      <div class="box"><div class="lbl">What the last operation said</div><div class="v" id="smsg">Nothing yet. Push something.</div></div>
+      <div class="lbl">Replay Checkpoint 1, one step at a time</div>
+      <button onclick="sStep()" id="sstepbtn">Next step</button>
+      <div class="key" id="sstepinfo"></div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>2. Queue: two doors, first in first out</h2>
+  <p class="sub">Photos join at the back and are printed from the front, oldest first.</p>
+  <div style="display:flex;align-items:center;gap:10px;margin:0 0 6px">
+    <div class="lbl" style="width:60px;text-align:center">OUT<br>front</div>
+    <div id="line" style="flex:1;min-height:66px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 8px;display:flex;gap:8px;align-items:center;overflow:hidden"></div>
+    <div class="lbl" style="width:60px;text-align:center">IN<br>back</div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button onclick="qEnq()">enqueue next photo</button>
+    <button onclick="qDeq()">dequeue (print)</button>
+    <button onclick="qReset()">reset</button>
+  </div>
+  <div class="grid2">
+    <div class="box"><div class="lbl">Last operation</div><div class="v" id="qmsg">Nothing yet.</div></div>
+    <div class="box"><div class="lbl">Printed so far, in order</div><div class="v" id="qdone">none</div></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>3. Circular buffer: move the front, not the items</h2>
+  <p class="sub">m = 8 slots. Enqueue writes at <code>(front + size) % m</code>. Dequeue sets <code>front = (front + 1) % m</code>. Nothing shifts.</p>
+  <svg id="ring" width="100%" viewBox="0 0 680 360" role="img" aria-label="Circular buffer with 8 slots"></svg>
+  <div class="row">
+    <button onclick="cEnq()">enqueue</button>
+    <button onclick="cDeq()">dequeue</button>
+    <button onclick="cLoad()">load Checkpoint 2</button>
+    <button onclick="cReset()">reset</button>
+  </div>
+  <div class="grid3">
+    <div class="box"><div class="lbl">front</div><div class="v" id="vf">0</div></div>
+    <div class="box"><div class="lbl">size</div><div class="v" id="vs">0</div></div>
+    <div class="box"><div class="lbl">next write slot</div><div class="v" id="vn">0</div></div>
+  </div>
+  <div class="box"><div class="lbl">What just happened</div><div class="v" id="cmsg">Press enqueue to start.</div></div>
+  <div class="key">Try: load Checkpoint 2, enqueue once (S lands in slot 0 because (5+3) % 8 = 0), then dequeue twice and watch front move while the letters stay put.</div>
+</section>
+</main>
+
+<script>
+var $=function(id){return document.getElementById(id);};
+
+/* ---------- STACK ---------- */
+var st=[],si=0;
+var ops=[['push','brighten'],['push','crop'],['push','rotate'],['pop'],['pop'],['push','filter'],['push','sharpen'],['pop']];
+function sRender(){
+  var h='';
+  if(!st.length){h='<div style="height:40px;border:1px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted)">empty stack</div>';}
+  for(var i=st.length-1;i>=0;i--){
+    var t=i===st.length-1;
+    h+='<div class="item'+(t?' top':'')+'"><span>'+st[i]+'</span>'+(t?'<span class="tag">top</span>':'')+'</div>';
+  }
+  $('stack').innerHTML=h;
+  var s=$('sstepinfo');
+  if(si<ops.length){var o=ops[si];s.textContent='Next: '+(o[0]==='push'?'push '+o[1]:'pop');$('sstepbtn').textContent='Next step ('+(si+1)+' of '+ops.length+')';}
+  else{s.textContent='Done. Left, bottom to top: '+(st.length?st.join(', '):'empty')+'.';$('sstepbtn').textContent='Replay finished';}
+}
+function sSay(t){$('smsg').textContent=t;}
+function sPush(x){st.push(x);sSay('push('+x+'): '+x+' is now the top');sRender();}
+function sPop(){if(!st.length){sSay('nothing to undo (empty stack)');sRender();return;}var x=st.pop();sSay('pop() returned '+x+'. The newest item left first');sRender();}
+function sPeek(){sSay(st.length?'peek() sees '+st[st.length-1]+' (not removed)':'nothing to peek at');}
+function sReset(){st=[];si=0;sSay('Cleared.');sRender();}
+function sStep(){
+  if(si>=ops.length)return;
+  if(si===0)st=[];
+  var o=ops[si];si++;
+  if(o[0]==='push')sPush(o[1]);else sPop();
+  sRender();
+}
+sRender();
+
+/* ---------- QUEUE ---------- */
+var q=[],qdone=[],qn=0,QL='ABCDEFGHIJ';
+function qRender(){
+  var h='';
+  for(var i=0;i<q.length;i++)h+='<div class="cell">'+q[i]+'</div>';
+  if(!q.length)h='<div style="font-size:13px;color:var(--muted);padding-left:8px">empty line</div>';
+  $('line').innerHTML=h;
+  $('qdone').textContent=qdone.length?qdone.join(', '):'none';
+}
+function qSay(t){$('qmsg').textContent=t;}
+function qEnq(){if(qn>=QL.length){qSay('Out of letters. Reset.');return;}var x=QL[qn++];q.push(x);qSay('enqueue('+x+'): '+x+' joins at the back');qRender();}
+function qDeq(){if(!q.length){qSay('dequeue() on empty: nothing to serve');return;}var x=q.shift();qdone.push(x);qSay('dequeue() served '+x+', the oldest');qRender();}
+function qReset(){q=[];qdone=[];qn=0;qSay('Cleared.');qRender();}
+qRender();
+
+/* ---------- CIRCULAR BUFFER ---------- */
+var M=8,slots,front,size,sp=0,CX=340,CY=180,R=110;
+var seq='PQRSTUVWXYZABCDEFGHIJKLMNO';
+function cInit(){slots=[];for(var i=0;i<M;i++)slots.push(null);front=0;size=0;}
+function cRender(){
+  var s='';
+  s+='<text x="'+CX+'" y="'+(CY-4)+'" text-anchor="middle" font-size="14" style="fill:var(--muted)">m = 8</text>';
+  s+='<text x="'+CX+'" y="'+(CY+14)+'" text-anchor="middle" font-size="12" style="fill:var(--muted)">capacity</text>';
+  var nw=(front+size)%M;
+  for(var i=0;i<M;i++){
+    var a=(-90+i*45)*Math.PI/180;
+    var x=CX+R*Math.cos(a),y=CY+R*Math.sin(a);
+    var lx=CX+(R+42)*Math.cos(a),ly=CY+(R+42)*Math.sin(a);
+    var occ=slots[i]!==null,isF=(i===front&&size>0),isN=(i===nw&&size<M);
+    var fill=occ?'var(--accent-bg)':'none';
+    var stroke=occ?'var(--accent)':(isN?'var(--warn)':'var(--line)');
+    var dash=occ?'':'stroke-dasharray:4 3;';
+    var sw=isF?3:1.5;
+    s+='<rect x="'+(x-26)+'" y="'+(y-26)+'" width="52" height="52" rx="8" style="fill:'+fill+';stroke:'+stroke+';stroke-width:'+sw+';'+dash+'"/>';
+    if(occ)s+='<text x="'+x+'" y="'+y+'" text-anchor="middle" dominant-baseline="central" font-size="18" font-weight="600" style="fill:var(--accent)">'+slots[i]+'</text>';
+    s+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-size="13" style="fill:var(--muted)">'+i+'</text>';
+    if(isF){
+      var fx=CX+(R-52)*Math.cos(a),fy=CY+(R-52)*Math.sin(a);
+      s+='<text x="'+fx+'" y="'+fy+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" style="fill:var(--accent)">front</text>';
+    }
+  }
+  $('ring').innerHTML=s;
+  $('vf').textContent=front;
+  $('vs').textContent=size;
+  $('vn').textContent=size===M?'full':nw;
+}
+function cSay(t){$('cmsg').textContent=t;}
+function cEnq(){
+  if(size===M){cSay('Full (size == m). Cannot enqueue.');return;}
+  var w=(front+size)%M,x=seq[sp%seq.length];sp++;
+  slots[w]=x;
+  cSay('enqueue('+x+'): write at (front + size) % m = ('+front+' + '+size+') % 8 = '+w+'. Then size becomes '+(size+1)+'.');
+  size++;cRender();
+}
+function cDeq(){
+  if(size===0){cSay('Empty (size == 0). Nothing to serve.');return;}
+  var x=slots[front],old=front;
+  slots[front]=null;front=(front+1)%M;size--;
+  cSay('dequeue() served '+x+'. front = ('+old+' + 1) % 8 = '+front+', size = '+size+'. No item moved.');
+  cRender();
+}
+function cLoad(){cInit();front=5;size=3;slots[5]='P';slots[6]='Q';slots[7]='R';sp=3;cSay('Loaded: m = 8, front = 5, size = 3. Try enqueue (S lands in slot 0), then dequeue.');cRender();}
+function cReset(){cInit();sp=0;cSay('Cleared.');cRender();}
+cInit();cRender();
+</script>
+</body>
+</html>
