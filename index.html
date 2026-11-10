@@ -36,7 +36,7 @@
 </head>
 <body>
 <main>
-  <h1>Class 6 Quiz</h1>
+  <h1>Class 6 Quiz (28 questions)</h1>
   <p class="sub">Searching an array, then a binary search tree</p>
   <div class="bar"><div id="bar"></div></div>
   <div class="count" id="count"></div>
@@ -45,43 +45,215 @@
 
 <script>
 const QUESTIONS = [
-  { q: "Linear search for Pond in the array Gate, Garden, Home, Pond, Park, Stall, Market. How many comparisons does it take?",
-    o: ["3","4","5","7"], a: 1,
-    e: "Pond is at index 3. A hit at index i takes i + 1 comparisons, so 3 + 1 = 4.",
-    h: "A hit at index i costs i + 1." },
-  { q: "The sorted array is Garden, Gate, Home, Market, Park, Pond, Stall (indices 0 to 6). You start with lo = 0, hi = 7. Which index is the first middle?",
-    o: ["2","4","3","7"], a: 2,
-    e: "The middle is floor((0 + 7) / 2) = floor(3.5) = 3, which holds Market.",
-    h: "Add lo and hi, divide by 2, round down." },
-  { q: "In binary search, the middle name comes BEFORE the target alphabetically. What do you do?",
-    o: ["Set hi = middle","Set lo = middle + 1","Set lo = middle","Stop: the target is not there"], a: 1,
-    e: "If the middle is before the target, the target is to its right. The middle was already checked, so the new lo is middle + 1.",
-    h: "Which side of the middle is the target on?" },
-  { q: "You binary search for Hill in the sorted array and reach lo = 2, hi = 2. Why does the search stop?",
-    o: ["Hill was found at index 2","The interval A[2:2) is empty, so Hill is not in the array","The search has used 3 comparisons, which is the limit","Home is too small"], a: 1,
-    e: "When lo equals hi, no indices are left to check. The search stops and reports not found.",
-    h: "How many cells are in the range lo to hi when lo = hi?" },
-  { q: "Why can't you get fast binary search on a sorted linked list?",
-    o: ["Linked lists cannot be sorted","Names in a linked list cannot be compared","Binary search only works on numbers","Reaching the middle means following next from the head, so it is not \u0398(1)"], a: 3,
-    e: "Binary search needs to jump straight to the middle cell. An array does that by index in \u0398(1). A linked list has to walk node by node.",
-    h: "Think about how you reach the middle cell." },
-  { q: "Inserting Hill into the sorted array Garden, Gate, Home, Market, Park, Pond, Stall costs \u0398(n) in the worst case. Why?",
-    o: ["The names after Hill must each shift one slot right","Finding where Hill belongs takes n comparisons","The array must be sorted again from scratch","A new array must be created for every insert"], a: 0,
-    e: "Home, Market, Park, Pond and Stall each move one slot right to make room. In general up to n cells move.",
-    h: "Search is not the slow part here." },
-  { q: "Someone makes Stall the right child of Gate in the tree rooted at Market. Why is this NOT a valid binary search tree?",
-    o: ["A node can have only one child","Stall comes before Gate","Stall would sit in Market's left subtree, but Stall comes after Market","Gate is a leaf and leaves cannot have children"], a: 2,
-    e: "The BST rule applies at every node, to the whole subtree. The link Gate to Stall looks fine alone, but everything in Market's left subtree must come before Market.",
-    h: "Check the rule against the root, not just the parent." },
-  { q: "Yard is inserted into the tree with root Market (children Gate and Pond; Pond's children are Park and Stall). Which node becomes Yard's parent?",
-    o: ["Pond","Park","Market","Stall"], a: 3,
-    e: "Yard comes after Market, after Pond and after Stall, and Stall has no right child. Yard attaches there. The parent is the last node the failed search touched.",
-    h: "Follow the search: Market, then Pond, then ..." },
-  { q: "You delete Market (two children) from the tree. Its successor is Park. What is the correct procedure?",
-    o: ["Copy Park's name into Market's node, then remove Park from its old position","Promote Gate, the left child, to the root","Delete Market and leave an empty root","Swap Market with Stall, the last leaf"], a: 0,
-    e: "For two children, the replacement must be the next name in order. The successor is the leftmost node in the right subtree. Copy it up, then delete it from its old spot. Inorder stays sorted.",
-    h: "The replacement must be the next name in sorted order." }
+ {
+  "q": "Linear search for Pond in the array Gate, Garden, Home, Pond, Park, Stall, Market. How many comparisons does it take?",
+  "o": ["3", "4", "5", "7"],
+  "a": 1,
+  "e": "Pond is at index 3. A hit at index i takes i + 1 comparisons, so 3 + 1 = 4.",
+  "h": "A hit at index i costs i + 1."
+ },
+ {
+  "q": "What is the worst-case cost of searching an UNSORTED array of n names?",
+  "o": ["\u0398(1)", "\u0398(log n)", "\u0398(n)", "\u0398(n\u00b2)"],
+  "a": 2,
+  "e": "With no order to use, you may have to read all n cells (last cell, or a miss). That is \u0398(n).",
+  "h": "Think of linear search."
+ },
+ {
+  "q": "The sorted array is Garden, Gate, Home, Market, Park, Pond, Stall (indices 0 to 6). You start with lo = 0, hi = 7. Which index is the first middle?",
+  "o": ["2", "4", "3", "7"],
+  "a": 2,
+  "e": "The middle is floor((0 + 7) / 2) = floor(3.5) = 3, which holds Market.",
+  "h": "Add lo and hi, divide by 2, round down."
+ },
+ {
+  "q": "In binary search, the middle name comes BEFORE the target alphabetically. What do you do?",
+  "o": ["Set hi = middle", "Set lo = middle + 1", "Set lo = middle", "Stop: the target is not there"],
+  "a": 1,
+  "e": "If the middle is before the target, the target is to its right. The middle was already checked, so the new lo is middle + 1.",
+  "h": "Which side of the middle is the target on?"
+ },
+ {
+  "q": "In binary search, the middle name comes AFTER the target alphabetically. What do you do?",
+  "o": ["Set lo = middle + 1", "Set lo = middle", "Set hi = middle", "Set hi = middle + 1"],
+  "a": 2,
+  "e": "The target is on the left. hi is the first index outside the zone, so hi = middle removes the middle and everything to its right.",
+  "h": "The target is on the left."
+ },
+ {
+  "q": "You binary search for Pond in the sorted array (lo = 0, hi = 7). After comparing with Market at index 3, what are lo and hi?",
+  "o": ["lo = 4, hi = 7", "lo = 3, hi = 7", "lo = 0, hi = 3", "lo = 4, hi = 6"],
+  "a": 0,
+  "e": "Market is before Pond, so Pond is on the right: lo = 3 + 1 = 4. hi stays 7.",
+  "h": "Market is before Pond."
+ },
+ {
+  "q": "How many comparisons does binary search take to find Home in the sorted array Garden, Gate, Home, Market, Park, Pond, Stall?",
+  "o": ["1", "2", "3", "4"],
+  "a": 2,
+  "e": "(0,7,3) Market: hi = 3. (0,3,1) Gate: lo = 2. (2,3,2) Home: found. Three comparisons.",
+  "h": "Trace lo, hi and middle round by round."
+ },
+ {
+  "q": "You binary search for Hill in the sorted array and reach lo = 2, hi = 2. Why does the search stop?",
+  "o": ["Hill was found at index 2", "The interval A[2:2) is empty, so Hill is not in the array", "The search has used 3 comparisons, which is the limit", "Home is too small"],
+  "a": 1,
+  "e": "When lo equals hi, no indices are left to check. The search stops and reports not found.",
+  "h": "How many cells are in the range lo to hi when lo = hi?"
+ },
+ {
+  "q": "Hill and Home both start with H. Which one comes first alphabetically, and why?",
+  "o": ["Home, because o comes before i", "Hill, because i comes before o", "They are equal", "Home, because it is longer"],
+  "a": 1,
+  "e": "When the first letters match, compare the second letters. i comes before o, so Hill is before Home.",
+  "h": "Look at the second letter."
+ },
+ {
+  "q": "Roughly how many comparisons does binary search need in the worst case for 1 000 000 names?",
+  "o": ["About 20", "About 1 000", "About 500 000", "1 000 000"],
+  "a": 0,
+  "e": "Each comparison halves the names: 1 000 000 \u2192 500 000 \u2192 250 000 \u2192 ... \u2192 1 takes about 20 halvings.",
+  "h": "How many times can you halve a million?"
+ },
+ {
+  "q": "The number of names doubles. How does the worst-case cost of binary search change?",
+  "o": ["It doubles", "It adds one comparison", "It stays exactly the same", "It squares"],
+  "a": 1,
+  "e": "One extra comparison halves the doubled list back to the old size. That is why the cost is \u0398(log n).",
+  "h": "Think about the halving."
+ },
+ {
+  "q": "Why can't you get fast binary search on a sorted linked list?",
+  "o": ["Linked lists cannot be sorted", "Names in a linked list cannot be compared", "Binary search only works on numbers", "Reaching the middle means following next from the head, so it is not \u0398(1)"],
+  "a": 3,
+  "e": "Binary search needs to jump straight to the middle cell. An array does that by index in \u0398(1). A linked list has to walk node by node.",
+  "h": "Think about how you reach the middle cell."
+ },
+ {
+  "q": "Inserting Hill into the sorted array Garden, Gate, Home, Market, Park, Pond, Stall costs \u0398(n) in the worst case. Why?",
+  "o": ["The names after Hill must each shift one slot right", "Finding where Hill belongs takes n comparisons", "The array must be sorted again from scratch", "A new array must be created for every insert"],
+  "a": 0,
+  "e": "Home, Market, Park, Pond and Stall each move one slot right to make room. In general up to n cells move.",
+  "h": "Search is not the slow part here."
+ },
+ {
+  "q": "Which statement is the BST rule?",
+  "o": ["Every node has exactly two children", "For every node, its left subtree is before it and its right subtree is after it", "Only the root must be the middle name", "Every parent is before its left child only"],
+  "a": 1,
+  "e": "The rule applies at every node and to the whole subtree, not only the root and not only direct children.",
+  "h": "It is about whole subtrees."
+ },
+ {
+  "q": "Someone makes Stall the right child of Gate in the tree rooted at Market. Why is this NOT a valid binary search tree?",
+  "o": ["A node can have only one child", "Stall comes before Gate", "Stall would sit in Market's left subtree, but Stall comes after Market", "Gate is a leaf and leaves cannot have children"],
+  "a": 2,
+  "e": "The BST rule applies at every node, to the whole subtree. The link Gate to Stall looks fine alone, but everything in Market's left subtree must come before Market.",
+  "h": "Check the rule against the root, not just the parent."
+ },
+ {
+  "q": "In the tree with root Market (children Gate and Pond; Gate's children Garden and Home; Pond's children Park and Stall), which nodes does a search for Home visit?",
+  "o": ["Market, Pond, Home", "Market, Gate, Garden, Home", "Market, Gate, Home", "Gate, Home"],
+  "a": 2,
+  "e": "Home is before Market (go left), after Gate (go right), and matches at Home. Pond's subtree is never read.",
+  "h": "Go left at Market, then right at Gate."
+ },
+ {
+  "q": "Which node is Yard's parent when Yard is inserted into that tree?",
+  "o": ["Pond", "Park", "Market", "Stall"],
+  "a": 3,
+  "e": "Yard comes after Market, after Pond and after Stall, and Stall has no right child. The parent is the last node the failed search touched.",
+  "h": "Follow the search: Market, then Pond, then ..."
+ },
+ {
+  "q": "What is the inorder of the tree rooted at Market (Gate and Pond; Garden, Home, Park, Stall)?",
+  "o": ["Market, Gate, Pond, Garden, Home, Park, Stall", "Garden, Home, Gate, Park, Stall, Pond, Market", "Garden, Gate, Home, Market, Park, Pond, Stall", "Stall, Pond, Park, Market, Home, Gate, Garden"],
+  "a": 2,
+  "e": "Inorder is left subtree, node, right subtree. On a BST that lists the names from A to Z.",
+  "h": "Left, node, right. The result is sorted."
+ },
+ {
+  "q": "A tree's inorder is Gate, Park, Pond, Home, Market. What does this tell you?",
+  "o": ["It is a valid BST", "It is NOT a BST, because the inorder is not sorted", "It has height 0", "It must be empty on one side"],
+  "a": 1,
+  "e": "On a BST, inorder lists names from A to Z. Home comes after Pond here, so the order is broken. It is only a binary tree.",
+  "h": "A BST's inorder is always sorted."
+ },
+ {
+  "q": "The tree rooted at Market (Gate and Pond; Garden, Home, Park, Stall) has what height, in edges?",
+  "o": ["1", "2", "3", "7"],
+  "a": 1,
+  "e": "Market is depth 0, Gate and Pond depth 1, the four leaves depth 2. The height is 2 edges.",
+  "h": "Height is the depth of the deepest node."
+ },
+ {
+  "q": "How many nodes does a worst-case search or insert read in a BST of height h?",
+  "o": ["h", "h + 1", "2h", "h \u2212 1"],
+  "a": 1,
+  "e": "The deepest path has h edges, which means h + 1 nodes. The search for Stall (h = 2) read 3 nodes.",
+  "h": "Nodes on a path = edges + 1."
+ },
+ {
+  "q": "You insert Garden, Gate, Home, Market, Park, Pond, Stall (in that order) into an empty BST. What is the height?",
+  "o": ["2", "3", "6", "7"],
+  "a": 2,
+  "e": "Each new name is after all earlier names, so it becomes the right child of the previous one. Seven nodes in a chain: height n \u2212 1 = 6.",
+  "h": "Every name goes to the right."
+ },
+ {
+  "q": "BST search and insert are \u0398(log n) only when...",
+  "o": ["the tree has more than 7 nodes", "the names are inserted in sorted order", "the height is \u0398(log n)", "the root is the first name inserted"],
+  "a": 2,
+  "e": "The cost is about h + 1 nodes. It is \u0398(log n) only when the height is \u0398(log n). A BST does not keep itself short.",
+  "h": "The cost follows the height."
+ },
+ {
+  "q": "Binary search for Yard on the sorted array Garden, Gate, Home, Market, Park, Pond, Stall (7 names). How many comparisons, and which index ends the search?",
+  "o": ["2 comparisons, index 5", "3 comparisons, index 7", "4 comparisons, index 6", "7 comparisons, index 7"],
+  "a": 1,
+  "e": "(0,7,3) Market: lo = 4. (4,7,5) Pond: lo = 6. (6,7,6) Stall: lo = 7. Now lo = hi = 7, so stop. Three comparisons, ending at index 7.",
+  "h": "Yard is after every name in the array."
+ },
+ {
+  "q": "In the tree rooted at Market, what is the successor of Market?",
+  "o": ["Home", "Pond", "Gate", "Park"],
+  "a": 3,
+  "e": "The successor is the leftmost name in the right subtree: step right to Pond, then go left to Park.",
+  "h": "Step right once, then left as far as possible."
+ },
+ {
+  "q": "In the same tree, what is the predecessor of Market?",
+  "o": ["Home", "Gate", "Garden", "Park"],
+  "a": 0,
+  "e": "The predecessor is the rightmost name in the left subtree: step left to Gate, then go right to Home.",
+  "h": "Step left once, then right as far as possible."
+ },
+ {
+  "q": "You delete a node that has exactly one child. What do you do?",
+  "o": ["Delete the child as well", "Link the parent straight to that child", "Copy the successor into the node", "Rebuild the whole tree"],
+  "a": 1,
+  "e": "With one child, the parent skips the deleted node and links straight to its child. The order is preserved.",
+  "h": "The parent skips over the deleted node."
+ },
+ {
+  "q": "You delete Market (two children) from the tree. Its successor is Park. What is the correct procedure?",
+  "o": ["Copy Park's name into Market's node, then remove Park from its old position", "Promote Gate, the left child, to the root", "Delete Market and leave an empty root", "Swap Market with Stall, the last leaf"],
+  "a": 0,
+  "e": "For two children, the replacement must be the next name in order. Copy the successor up, then delete it from its old spot. Inorder stays sorted.",
+  "h": "The replacement must be the next name in sorted order."
+ }
 ];
+
+function shuffleOptions() {
+  QUESTIONS.forEach(Q => {
+    const right = Q.o[Q.a];
+    for (let k = Q.o.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      [Q.o[k], Q.o[j]] = [Q.o[j], Q.o[k]];
+    }
+    Q.a = Q.o.indexOf(right);
+  });
+}
+shuffleOptions();
 
 let i = 0, score = 0, missed = [];
 const card = document.getElementById("card");
@@ -132,7 +304,7 @@ function finish() {
     '<div>Your score</div><div class="score">' + score + ' / ' + QUESTIONS.length + '</div>' +
     '<div class="review">' + (missed.length ? "Review these questions: " + missed.join(", ") : "Perfect. Nothing to review.") + '</div>' +
     '<button class="next" id="again">Try again</button>';
-  document.getElementById("again").onclick = () => { i = 0; score = 0; missed = []; show(); };
+  document.getElementById("again").onclick = () => { i = 0; score = 0; missed = []; shuffleOptions(); show(); };
 }
 
 show();
