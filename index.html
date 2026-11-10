@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class 6 Quiz: Searching and BSTs</title>
+<style>
+  :root { --bg:#f6f7fb; --card:#fff; --text:#1f2430; --muted:#667085; --line:#d9dce5; --blue:#2354c7; --green:#1f8a4c; --red:#c8372d; --greenbg:#e7f6ed; --redbg:#fdeceb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14161c; --card:#1d2029; --text:#eceef4; --muted:#9aa1b2; --line:#343847; --blue:#7aa2ff; --green:#4cc886; --red:#ff7b72; --greenbg:#17301f; --redbg:#3a1d1b; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; line-height:1.5; }
+  main { max-width:680px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.4rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 20px; font-size:.95rem; }
+  .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-bottom:6px; }
+  .bar > div { height:100%; width:0; background:var(--blue); transition:width .3s; }
+  .count { color:var(--muted); font-size:.85rem; margin-bottom:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; }
+  .q { font-size:1.05rem; font-weight:600; margin:0 0 14px; }
+  .opt { display:block; width:100%; text-align:left; background:transparent; color:inherit; border:1px solid var(--line); border-radius:8px; padding:11px 14px; margin-bottom:8px; font:inherit; cursor:pointer; }
+  .opt:hover:not(:disabled) { border-color:var(--blue); }
+  .opt:disabled { cursor:default; }
+  .opt.correct { border-color:var(--green); background:var(--greenbg); }
+  .opt.wrong { border-color:var(--red); background:var(--redbg); }
+  .hintbtn, .next { font:inherit; border:0; border-radius:8px; padding:9px 16px; cursor:pointer; }
+  .hintbtn { background:transparent; color:var(--blue); padding-left:0; }
+  .next { background:var(--blue); color:#fff; margin-top:10px; }
+  .hint { color:var(--muted); font-size:.92rem; margin:2px 0 10px; display:none; }
+  .explain { margin-top:12px; padding:12px 14px; border-radius:8px; border:1px solid var(--line); display:none; font-size:.95rem; }
+  .explain b.ok { color:var(--green); } .explain b.no { color:var(--red); }
+  .score { font-size:2rem; font-weight:700; margin:6px 0; }
+  .review { margin-top:12px; font-size:.92rem; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Class 6 Quiz</h1>
+  <p class="sub">Searching an array, then a binary search tree</p>
+  <div class="bar"><div id="bar"></div></div>
+  <div class="count" id="count"></div>
+  <div class="card" id="card"></div>
+</main>
+
+<script>
+const QUESTIONS = [
+  { q: "Linear search for Pond in the array Gate, Garden, Home, Pond, Park, Stall, Market. How many comparisons does it take?",
+    o: ["3","4","5","7"], a: 1,
+    e: "Pond is at index 3. A hit at index i takes i + 1 comparisons, so 3 + 1 = 4.",
+    h: "A hit at index i costs i + 1." },
+  { q: "The sorted array is Garden, Gate, Home, Market, Park, Pond, Stall (indices 0 to 6). You start with lo = 0, hi = 7. Which index is the first middle?",
+    o: ["2","4","3","7"], a: 2,
+    e: "The middle is floor((0 + 7) / 2) = floor(3.5) = 3, which holds Market.",
+    h: "Add lo and hi, divide by 2, round down." },
+  { q: "In binary search, the middle name comes BEFORE the target alphabetically. What do you do?",
+    o: ["Set hi = middle","Set lo = middle + 1","Set lo = middle","Stop: the target is not there"], a: 1,
+    e: "If the middle is before the target, the target is to its right. The middle was already checked, so the new lo is middle + 1.",
+    h: "Which side of the middle is the target on?" },
+  { q: "You binary search for Hill in the sorted array and reach lo = 2, hi = 2. Why does the search stop?",
+    o: ["Hill was found at index 2","The interval A[2:2) is empty, so Hill is not in the array","The search has used 3 comparisons, which is the limit","Home is too small"], a: 1,
+    e: "When lo equals hi, no indices are left to check. The search stops and reports not found.",
+    h: "How many cells are in the range lo to hi when lo = hi?" },
+  { q: "Why can't you get fast binary search on a sorted linked list?",
+    o: ["Linked lists cannot be sorted","Names in a linked list cannot be compared","Binary search only works on numbers","Reaching the middle means following next from the head, so it is not \u0398(1)"], a: 3,
+    e: "Binary search needs to jump straight to the middle cell. An array does that by index in \u0398(1). A linked list has to walk node by node.",
+    h: "Think about how you reach the middle cell." },
+  { q: "Inserting Hill into the sorted array Garden, Gate, Home, Market, Park, Pond, Stall costs \u0398(n) in the worst case. Why?",
+    o: ["The names after Hill must each shift one slot right","Finding where Hill belongs takes n comparisons","The array must be sorted again from scratch","A new array must be created for every insert"], a: 0,
+    e: "Home, Market, Park, Pond and Stall each move one slot right to make room. In general up to n cells move.",
+    h: "Search is not the slow part here." },
+  { q: "Someone makes Stall the right child of Gate in the tree rooted at Market. Why is this NOT a valid binary search tree?",
+    o: ["A node can have only one child","Stall comes before Gate","Stall would sit in Market's left subtree, but Stall comes after Market","Gate is a leaf and leaves cannot have children"], a: 2,
+    e: "The BST rule applies at every node, to the whole subtree. The link Gate to Stall looks fine alone, but everything in Market's left subtree must come before Market.",
+    h: "Check the rule against the root, not just the parent." },
+  { q: "Yard is inserted into the tree with root Market (children Gate and Pond; Pond's children are Park and Stall). Which node becomes Yard's parent?",
+    o: ["Pond","Park","Market","Stall"], a: 3,
+    e: "Yard comes after Market, after Pond and after Stall, and Stall has no right child. Yard attaches there. The parent is the last node the failed search touched.",
+    h: "Follow the search: Market, then Pond, then ..." },
+  { q: "You delete Market (two children) from the tree. Its successor is Park. What is the correct procedure?",
+    o: ["Copy Park's name into Market's node, then remove Park from its old position","Promote Gate, the left child, to the root","Delete Market and leave an empty root","Swap Market with Stall, the last leaf"], a: 0,
+    e: "For two children, the replacement must be the next name in order. The successor is the leftmost node in the right subtree. Copy it up, then delete it from its old spot. Inorder stays sorted.",
+    h: "The replacement must be the next name in sorted order." }
+];
+
+let i = 0, score = 0, missed = [];
+const card = document.getElementById("card");
+const bar = document.getElementById("bar");
+const count = document.getElementById("count");
+
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+function show() {
+  const Q = QUESTIONS[i];
+  bar.style.width = (i / QUESTIONS.length * 100) + "%";
+  count.textContent = "Question " + (i + 1) + " of " + QUESTIONS.length;
+  card.innerHTML =
+    '<p class="q">' + esc(Q.q) + '</p>' +
+    '<button class="hintbtn" id="hbtn">Show hint</button>' +
+    '<div class="hint" id="hint">' + esc(Q.h) + '</div>' +
+    Q.o.map((t, k) => '<button class="opt" data-k="' + k + '">' + esc(t) + '</button>').join("") +
+    '<div class="explain" id="ex"></div><div id="nx"></div>';
+  document.getElementById("hbtn").onclick = () => {
+    document.getElementById("hint").style.display = "block";
+    document.getElementById("hbtn").style.display = "none";
+  };
+  card.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(+b.dataset.k));
+}
+
+function answer(k) {
+  const Q = QUESTIONS[i];
+  const ok = k === Q.a;
+  if (ok) score++; else missed.push(i + 1);
+  card.querySelectorAll(".opt").forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === Q.a) b.classList.add("correct");
+    else if (idx === k) b.classList.add("wrong");
+  });
+  const ex = document.getElementById("ex");
+  ex.style.display = "block";
+  ex.innerHTML = (ok ? '<b class="ok">Right.</b> ' : '<b class="no">Not quite.</b> ') + esc(Q.e);
+  const last = i === QUESTIONS.length - 1;
+  document.getElementById("nx").innerHTML =
+    '<button class="next" id="nbtn">' + (last ? "See score" : "Next question") + '</button>';
+  document.getElementById("nbtn").onclick = () => { i++; last ? finish() : show(); };
+}
+
+function finish() {
+  bar.style.width = "100%";
+  count.textContent = "Done";
+  card.innerHTML =
+    '<div>Your score</div><div class="score">' + score + ' / ' + QUESTIONS.length + '</div>' +
+    '<div class="review">' + (missed.length ? "Review these questions: " + missed.join(", ") : "Perfect. Nothing to review.") + '</div>' +
+    '<button class="next" id="again">Try again</button>';
+  document.getElementById("again").onclick = () => { i = 0; score = 0; missed = []; show(); };
+}
+
+show();
+</script>
+</body>
+</html>
